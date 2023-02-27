@@ -1,7 +1,0 @@
-CODE BLOG - fparser.py
-
-
-- bencodingParser, a function to parse and convert bencoded files needed to destruct metadata from torrent files. This function is tweaked from it's original version to now read and parse the file on the fly to avoid the need of loading the whole file into memory.
-
-
-
