@@ -104,6 +104,15 @@ def filestreamDecoder(filepath):
     return res
 
 
+# Format and deformat between bytes data to hex string concatinated between <HEX>, </HEX> wrappers for recognition and parsing. 
+def formatB2H(bin_data):
+    return '<HEX>' + binascii.hexlify(bin_data) + '</HEX>'
+
+def deformatH2B(formatted_hex_data):
+    return binascii.unhexlify(formatted_hex_data[formatted_hex_data.find('<HEX>')+5:formatted_hex_data.find('</HEX>')])
+
+
+
 # Append result to `res` according to its result.
 def append_to_result(res, value, name=''):
     if type(res).__name__ == 'dict':
@@ -221,18 +230,14 @@ def encode(input_data):
 
 
 def parsePeersFromResponse(response):
-    p = response.find('peers')
-    col = response.find(':', p)
-    size = int(response[p+5:col])
-    peers_compact = response[col+1:col+size+1]
-
+    respobj = decode(response)[1][0]
+    peers_compact = deformatH2B(respobj['peers'])
+    
     peers_list = []
-    for i in range(0, len(peers_compact)//6):    
-        ip = ''
-        ip += str(unpack('>B', peers_compact[i:i+1])[0]) + '.'
-        ip += str(unpack('>B', peers_compact[i+1:i+2])[0]) + '.'
-        ip += str(unpack('>B', peers_compact[i+2:i+3])[0]) + '.'
-        ip += str(unpack('>B', peers_compact[i+3:i+4])[0])
-        port=unpack('>H', peers_compact[i+4:i+6])
-        peers_list.append((ip, port[0]))
+    total_peers = len(peers_compact) // 6
+
+    for i in range(0,total_peers):
+        peers_list.append(unpack('>BBBBH', peers_compact[i:i+6]))
+
     return peers_list
+
